@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/leehyunmin/Desktop/Projects/PS/ss_coding_test/boj",
+      "program": "/Users/leehyunmin/Desktop/Projects/PS/ss_coding_test/boj/build/Debug/outDebug"
+    }
+  ]
+}
