@@ -224,160 +224,88 @@ void change_gate(){
     }
 }
 
-int bfs_dist(int x, int y){
-
+int bfs_dist(int x,int y){
+    //cout << x << " x  " << y << " y \n";
     queue<pair<int,int>> q;
     int visit[30][30] = {};
-
-    q.push({x, y});
+    q.push({x,y});
     visit[x][y] = 1;
-
-    int target_team = -1;
-
-    // 공에 맞은 사람이 머리인 경우
     if(map[x][y] == 1){
-
-        for(int i = 0; i < teams.size(); i++){
-            if(teams[i].leader_x == x &&
-               teams[i].leader_y == y){
-
-                target_team = i;
-                break;
+        for(int k = 0; k < teams.size(); k++){
+                if(x == teams[k].leader_x && y == teams[k].leader_y ){
+                    map[teams[k].leader_x][teams[k].leader_y] = 3;
+                    map[teams[k].back_x][teams[k].back_y] = 1;
+                    int temp_x = teams[k].leader_x;
+                    int temp_y = teams[k].leader_y;
+                    teams[k].leader_x = teams[k].back_x;
+                    teams[k].leader_y = teams[k].back_y;
+                    teams[k].back_x = temp_x;
+                    teams[k].back_y = temp_y;
+                    break;
             }
         }
-
-        // 머리 <-> 꼬리 변경
-        if(target_team != -1){
-
-            int old_leader_x = teams[target_team].leader_x;
-            int old_leader_y = teams[target_team].leader_y;
-
-            int old_back_x = teams[target_team].back_x;
-            int old_back_y = teams[target_team].back_y;
-
-            map[old_leader_x][old_leader_y] = 3;
-            map[old_back_x][old_back_y] = 1;
-
-            teams[target_team].leader_x = old_back_x;
-            teams[target_team].leader_y = old_back_y;
-
-            teams[target_team].back_x = old_leader_x;
-            teams[target_team].back_y = old_leader_y;
-        }
-
         return 1;
     }
-
-
     while(!q.empty()){
-
-        int now_x = q.front().first;
-        int now_y = q.front().second;
+        pair<int,int> now = q.front();
         q.pop();
+        for(int i = 0; i < 4; i++){
+            int now_x = now.first + dx[i];
+            int now_y = now.second + dy[i];
 
-        for(int dir = 0; dir < 4; dir++){
+            if(now_x < 0 || now_x >= N || now_y < 0 || now_y >= N ) continue;
+            if(map[now_x][now_y] == 0) continue;
+            if(visit[now_x][now_y]) continue; // 이미 방문한 경우에 pass
+            
 
-            int nx = now_x + dx[dir];
-            int ny = now_y + dy[dir];
+                if(map[now_x][now_y] == 3 &&
+                map[now.first][now.second] == 1)
+                    continue;
 
-            if(nx < 0 || nx >= N ||
-               ny < 0 || ny >= N)
-                continue;
-
-            if(visit[nx][ny])
-                continue;
-
-            // 사람이 아닌 위치는 이동하지 않음
-            if(map[nx][ny] == 0 ||
-               map[nx][ny] == 4)
-                continue;
-
-
-            /*
-                중요!!
-
-                사람이 선을 전부 채우고 있는 경우
-
-                1 - 2
-                |   |
-                3 - 2
-
-                처럼 머리(1)와 꼬리(3)가 붙을 수 있음.
-
-                이때
-                3 -> 1
-                로 바로 이동해버리면
-                몇 번째 사람인지 잘못 계산됨.
-            */
-
-            if(map[now_x][now_y] == 3 &&
-               map[nx][ny] == 1)
-                continue;
-
-            if(map[now_x][now_y] == 1 &&
-               map[nx][ny] == 3)
-                continue;
+                if(map[now_x][now_y] == 1 &&
+                map[now.first][now.second] == 3)
+                    continue;
 
 
-            visit[nx][ny] = visit[now_x][now_y] + 1;
+            if(map[now_x][now_y] != 4){
+                q.push({now_x,now_y});
+                visit[now_x][now_y] = visit[now.first][now.second] + 1;
 
-            // 머리를 찾았음
-            if(map[nx][ny] == 1){
 
-                for(int i = 0; i < teams.size(); i++){
+                if(map[now_x][now_y] == 1){
+                    // 여기서 머리 꼬리 변경
+                    for(int k = 0; k < teams.size(); k++){
+                        //exit(1);
 
-                    if(teams[i].leader_x == nx &&
-                       teams[i].leader_y == ny){
+                        if(now_x == teams[k].leader_x && now_y == teams[k].leader_y ){
+                            map[teams[k].leader_x][teams[k].leader_y] = 3;
+                           //cout << "after\n";
+                            //print_map();
+                            //cout << "backs: " <<teams[k].back_x << " "<< teams[k].back_y <<"\n";
+                            map[teams[k].back_x][teams[k].back_y] = 1;
+                            //cout << "after\n";
+                            //print_map();
+                            //exit(1);
 
-                        target_team = i;
-                        break;
+                            int temp_x = teams[k].leader_x;
+                            int temp_y = teams[k].leader_y;
+                            teams[k].leader_x = teams[k].back_x;
+                            teams[k].leader_y = teams[k].back_y;
+                            teams[k].back_x = temp_x;
+                            teams[k].back_y = temp_y;
+
+                            break;
+                        }
                     }
+                    //cout << now_x << " x  " << now_y << " y \n";
+                    return visit[now_x][now_y];  // 리더와의 거리 방출
                 }
-
-                if(target_team != -1){
-
-                    int old_leader_x =
-                        teams[target_team].leader_x;
-
-                    int old_leader_y =
-                        teams[target_team].leader_y;
-
-                    int old_back_x =
-                        teams[target_team].back_x;
-
-                    int old_back_y =
-                        teams[target_team].back_y;
-
-
-                    // 지도에서 머리 / 꼬리 변경
-                    map[old_leader_x][old_leader_y] = 3;
-                    map[old_back_x][old_back_y] = 1;
-
-
-                    // team 정보 변경
-                    teams[target_team].leader_x =
-                        old_back_x;
-
-                    teams[target_team].leader_y =
-                        old_back_y;
-
-                    teams[target_team].back_x =
-                        old_leader_x;
-
-                    teams[target_team].back_y =
-                        old_leader_y;
-                }
-
-                return visit[nx][ny];
             }
-
-
-            q.push({nx, ny});
         }
     }
-
     return 0;
 }
+
 
 
 int main(){
