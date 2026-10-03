@@ -50,48 +50,47 @@ bool is_end(){
 
 void move_people(){
     for(int i = 0; i < peoples.size(); i++){
-
-        if(peoples[i].is_exit) continue;
-
-        int cur_dist =
-            abs(peoples[i].x - exit_axis.first)
-            + abs(peoples[i].y - exit_axis.second);
-
-        int min_dist = cur_dist;
-
-        int result_x = -1;
-        int result_y = -1;
-
+        if(peoples[i].is_exit == true) continue;
+        int min = abs(peoples[i].x - exit_axis.first)
+                + abs(peoples[i].y - exit_axis.second);
+        vector<int> result_move_x ;
+        vector<int> result_move_y ;
         for(int j = 0; j < 4; j++){
+            int cand_x = peoples[i].x + dx[j];
+            int cand_y = peoples[i].y + dy[j];
 
-            int nx = peoples[i].x + dx[j];
-            int ny = peoples[i].y + dy[j];
-
-            if(nx < 0 || nx >= N ||
-               ny < 0 || ny >= N)
-                continue;
-
-            // 벽이면 이동 불가능
-            if(map[nx][ny] > 0)
-                continue;
-
-            int dist =
-                abs(nx - exit_axis.first)
-                + abs(ny - exit_axis.second);
-
-            // 현재보다 가까워지는 경우만
-            if(dist < min_dist){
-                min_dist = dist;
-                result_x = nx;
-                result_y = ny;
+            if(cand_x < 0 || cand_x >= N || cand_y < 0 || cand_y >= N) continue;// 이때는 넘어가기
+            if(map[cand_x][cand_y] > 0 ) continue; // 벽인경우
+            
+            // 이때는 움직일 수 있음
+            int dist_x = cand_x - exit_axis.first;
+            int dist_y = cand_y - exit_axis.second;
+            if(dist_x < 0) dist_x = -1 * dist_x;
+            if(dist_y < 0) dist_y = -1 * dist_y; // 음수 변형
+            int dist = dist_x + dist_y;
+            if(min > dist){
+                result_move_x.clear();
+                result_move_y.clear();
+                result_move_x.push_back(cand_x);
+                result_move_y.push_back(cand_y);
+                min = dist; 
+            }
+            else if(min == dist){
+                result_move_x.push_back(cand_x);
+                result_move_y.push_back(cand_y);
+            }
+        }
+        if(result_move_x.empty() == 1 && result_move_y.empty() == 1) continue; // 이떄는 움직일 수 없는 것
+        
+        for(int k = 0; k < result_move_x.size(); k++){
+            if(map[result_move_x[k]][result_move_y[k]] == 0 ){
+                peoples[i].x = result_move_x[k];
+                peoples[i].y = result_move_y[k]; // 좌표 갱신
+                peoples[i].move_num++;
+                break;
             }
         }
 
-        if(result_x == -1) continue;
-
-        peoples[i].x = result_x;
-        peoples[i].y = result_y;
-        peoples[i].move_num++;
     }
 }
 
